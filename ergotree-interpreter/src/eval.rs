@@ -1,4 +1,5 @@
 //! Interpreter
+use bounded_vec::BoundedVecOutOfBounds;
 use std::rc::Rc;
 
 use ergotree_ir::ergo_tree::ErgoTreeError;
@@ -25,6 +26,7 @@ pub mod env;
 
 pub(crate) mod and;
 pub(crate) mod apply;
+pub(crate) mod atleast;
 pub(crate) mod bin_op;
 pub(crate) mod block;
 pub(crate) mod bool_to_sigma;
@@ -128,6 +130,9 @@ pub enum EvalError {
     /// Not yet implemented
     #[error("evaluation is not yet implemented: {0}")]
     NotImplementedYet(&'static str),
+    /// Invalid item quantity for BoundedVec
+    #[error("Invalid item quantity for BoundedVec: {0}")]
+    BoundedVecError(#[from] BoundedVecOutOfBounds),
 }
 
 /// Result of expression reduction procedure (see `reduce_to_crypto`).
