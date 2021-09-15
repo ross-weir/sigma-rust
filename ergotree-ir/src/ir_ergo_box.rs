@@ -48,4 +48,3 @@ impl PartialEq for dyn IrErgoBox + '_ {
         self.id() == other.id()
     }
 }
-
