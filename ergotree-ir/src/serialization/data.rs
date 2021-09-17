@@ -1,3 +1,4 @@
+use crate::ir_ergo_box::IrErgoBox;
 use crate::mir::constant::Literal;
 use crate::mir::constant::TryExtractFromError;
 use crate::mir::constant::TryExtractInto;
@@ -17,6 +18,7 @@ use crate::util::AsVecU8;
 
 use super::sigma_byte_writer::SigmaByteWrite;
 use std::convert::TryInto;
+use std::rc::Rc;
 
 pub struct DataSerializer {}
 
@@ -36,7 +38,7 @@ impl DataSerializer {
             }
             Literal::GroupElement(ecp) => ecp.sigma_serialize(w)?,
             Literal::SigmaProp(s) => s.value().sigma_serialize(w)?,
-            Literal::CBox(_) => return Err(SigmaSerializationError::NotImplementedYet("Box")),
+            Literal::CBox(b) => w.write_all(b.bytes()?.as_vec_u8().as_slice())?,
             Literal::Coll(ct) => match ct {
                 CollKind::NativeColl(NativeColl::CollByte(b)) => {
                     w.put_usize_as_u16_unwrapped(b.len())?;
@@ -142,9 +144,8 @@ impl DataSerializer {
                 Literal::Tup(items.try_into()?)
             }
             SBox => {
-                return Err(SigmaParsingError::NotImplementedYet(
-                    "SBox data".to_string(),
-                ))
+                let b: Rc<dyn IrErgoBox> = ErgoBoxParser::parse(r)?;
+                Literal::CBox(b)
             }
             SAvlTree => {
                 return Err(SigmaParsingError::NotImplementedYet(
